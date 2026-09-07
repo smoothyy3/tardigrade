@@ -11,8 +11,9 @@ go install github.com/smoothyy3/tardigrade/cmd/tardigrade@latest
 ## Usage
 
 ```bash
-tardigrade                 # drag the mouse to wound it, q to quit
-tardigrade --screensaver   # wounds and heals itself on a timer, any key exits
+tardigrade                  # drag the mouse to wound it, q to quit
+tardigrade --creature gecko # grow the gecko instead
+tardigrade --screensaver    # wounds and heals itself on a timer, any key exits
 ```
 
 | key | |
@@ -33,6 +34,7 @@ kill -9 $(pgrep -f 'tardigrade --worker')
 | flag | default | |
 | --- | --- | --- |
 | `--screensaver` | off | autonomous damage/heal loop, exits on any keypress |
+| `--creature` | `tardigrade` | which built-in creature to grow (`tardigrade`, `gecko`) |
 | `--fps` | 20 | frames per second |
 | `--size` | 56 | grid size in cells; the creature was trained at 56 |
 | `--seed` | time | random seed |
@@ -74,6 +76,8 @@ python training/export_weights.py --run training/runs/newt --out assets/newt.nca
 ```
 
 Draw it chunky. Nothing thinner than about two cells survives.
+
+Creatures registered in `assets/assets.go` are baked into the binary and picked with `--creature <name>` — a `gecko` ships alongside the tardigrade. `--weights <file>` loads an `.nca` from disk instead.
 
 ## License
 

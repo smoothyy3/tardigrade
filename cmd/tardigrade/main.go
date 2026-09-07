@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -29,6 +30,7 @@ const (
 )
 
 type options struct {
+	creature    string
 	weights     string
 	size        int
 	fps         int
@@ -38,6 +40,7 @@ type options struct {
 
 func main() {
 	var opts options
+	flag.StringVar(&opts.creature, "creature", assets.Default, "which built-in creature to grow ("+strings.Join(assets.Names(), ", ")+")")
 	flag.StringVar(&opts.weights, "weights", "", "path to a weights file (default: the ones built into the binary)")
 	flag.IntVar(&opts.size, "size", 56, "grid size in cells (the creature was trained at 56)")
 	flag.IntVar(&opts.fps, "fps", 20, "frames per second")
@@ -82,6 +85,9 @@ func workerFlags(opts options) []string {
 	if opts.seed >= 0 {
 		args = append(args, "--seed", strconv.FormatInt(opts.seed, 10))
 	}
+	if opts.creature != assets.Default {
+		args = append(args, "--creature", opts.creature)
+	}
 	if opts.weights != "" {
 		args = append(args, "--weights", opts.weights)
 	}
@@ -94,7 +100,7 @@ func workerFlags(opts options) []string {
 func runWorker(opts options) error {
 	fmt.Printf("tardigrade %d\n", os.Getpid())
 
-	model, err := loadModel(opts.weights)
+	model, err := loadModel(opts.creature, opts.weights)
 	if err != nil {
 		return err
 	}
@@ -173,11 +179,15 @@ func runWorker(opts options) error {
 	}
 }
 
-func loadModel(path string) (*nca.Model, error) {
-	if path != "" {
-		return nca.LoadFile(path)
+func loadModel(creature, weights string) (*nca.Model, error) {
+	if weights != "" {
+		return nca.LoadFile(weights)
 	}
-	return nca.Load(bytes.NewReader(assets.Tardigrade))
+	data, err := assets.Weights(creature)
+	if err != nil {
+		return nil, err
+	}
+	return nca.Load(bytes.NewReader(data))
 }
 
 func randomWound(rng *rand.Rand, g *grid.Grid, size int) grid.Rect {
