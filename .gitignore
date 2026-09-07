@@ -1,0 +1,20 @@
+# Sprite review renders
+training/sprite/
+
+# Training runs (checkpoints, logs, sample images)
+training/runs/
+train_log/
+wandb/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Go
+/tardigrade
+
+# macOS
+.DS_Store
+
+demo/*.tape
