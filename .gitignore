@@ -18,3 +18,4 @@ __pycache__/
 .DS_Store
 
 demo/*.tape
+demo/drag_tardigrade.gif
