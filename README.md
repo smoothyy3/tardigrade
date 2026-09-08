@@ -27,7 +27,7 @@ tardigrade --screensaver    # wounds and heals itself on a timer, any key exits
 
 ![dragging the mouse across the creature, carving a wound that closes up again](demo/drag.gif)
 
-It prints its PID on start, and shows it along the bottom of the screen. That is not decoration:
+It prints its PID on start, and shows it along the bottom of the screen. Try:
 
 ```bash
 kill -9 $(pgrep -f 'tardigrade --worker')
