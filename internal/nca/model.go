@@ -50,6 +50,7 @@ type band struct {
 	percept []float32
 	hidden  []float32
 	delta   []float32
+	neigh   []float32
 	rng     *rand.Rand
 }
 
@@ -126,6 +127,7 @@ func Load(r io.Reader) (*Model, error) {
 			percept: make([]float32, m.Percept),
 			hidden:  make([]float32, m.Hidden),
 			delta:   make([]float32, m.Channels),
+			neigh:   make([]float32, m.Channels*9),
 		})
 	}
 	return m, nil
@@ -204,19 +206,22 @@ func (m *Model) Step(state, next []float32, width, height int, rng *rand.Rand) {
 // Padding is circular
 func (m *Model) perceive(b *band, state []float32, width, height, x, y int) {
 	cells := width * height
-	for p := range b.percept {
-		sum := m.perceptB[p]
-		base := p * m.Channels * 9
-		for ky := -1; ky <= 1; ky++ {
-			row := wrap(y+ky, height) * width
-			for kx := -1; kx <= 1; kx++ {
-				at := row + wrap(x+kx, width)
-				w := base + (ky+1)*3 + (kx + 1)
-				for c := 0; c < m.Channels; c++ {
-					sum += m.perceptW[w+c*9] * state[c*cells+at]
-				}
+
+	neigh := b.neigh
+	for ky := -1; ky <= 1; ky++ {
+		row := wrap(y+ky, height) * width
+		for kx := -1; kx <= 1; kx++ {
+			at := row + wrap(x+kx, width)
+			k := (ky+1)*3 + (kx + 1)
+			for c := 0; c < m.Channels; c++ {
+				neigh[c*9+k] = state[c*cells+at]
 			}
 		}
+	}
+
+	n := len(neigh)
+	for p := range b.percept {
+		sum := m.perceptB[p] + dot(m.perceptW[p*n:(p+1)*n], neigh)
 		b.percept[p] = leakyReLU(sum)
 	}
 }
@@ -224,19 +229,13 @@ func (m *Model) perceive(b *band, state []float32, width, height, x, y int) {
 // update runs the 1x1 MLP over the perceived features
 func (m *Model) update(b *band) {
 	for h := range b.hidden {
-		sum := m.hiddenB[h]
 		row := h * m.Percept
-		for p, v := range b.percept {
-			sum += m.hiddenW[row+p] * v
-		}
+		sum := m.hiddenB[h] + dot(m.hiddenW[row:row+m.Percept], b.percept)
 		b.hidden[h] = leakyReLU(sum)
 	}
 	for c := 0; c < m.Channels; c++ {
-		sum := m.outB[c]
 		row := c * m.Hidden
-		for h, v := range b.hidden {
-			sum += m.outW[row+h] * v
-		}
+		sum := m.outB[c] + dot(m.outW[row:row+m.Hidden], b.hidden)
 		if m.tanh {
 			sum = float32(math.Tanh(float64(sum)))
 		}
@@ -285,6 +284,26 @@ func (m *Model) eachBand(height int, work func(b *band, from, to int)) {
 		}(m.bands[i], from, to)
 	}
 	wg.Wait()
+}
+
+// dot sums w[i]*v[i]
+func dot(w, v []float32) float32 {
+	if len(w) > len(v) {
+		w = w[:len(v)]
+	}
+	var s0, s1, s2, s3 float32
+	i := 0
+	for ; i+4 <= len(w); i += 4 {
+		s0 += w[i] * v[i]
+		s1 += w[i+1] * v[i+1]
+		s2 += w[i+2] * v[i+2]
+		s3 += w[i+3] * v[i+3]
+	}
+	sum := (s0 + s1) + (s2 + s3)
+	for ; i < len(w); i++ {
+		sum += w[i] * v[i]
+	}
+	return sum
 }
 
 func wrap(i, n int) int {
