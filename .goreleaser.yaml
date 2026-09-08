@@ -1,0 +1,85 @@
+# https://goreleaser.com
+version: 2
+
+project_name: tardigrade
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: tardigrade
+    main: ./cmd/tardigrade
+    binary: tardigrade
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: tardigrade
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_
+      {{- if eq .Arch "amd64" }}x86_64{{ else }}{{ .Arch }}{{ end }}
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+
+release:
+  draft: false
+  prerelease: auto
+  footer: |
+    ## Install
+
+    ```bash
+    brew install --cask smoothyy3/tap/tardigrade
+    ```
+
+    Or download the archive for your platform below and put `tardigrade` on your `$PATH`.
+
+# macOS only: Homebrew on Linux does not support casks.
+# Linux users get the tarballs above, `go install`, or a distro package.
+homebrew_casks:
+  - name: tardigrade
+    binary: tardigrade
+    homepage: https://github.com/smoothyy3/tardigrade
+    description: A self-healing creature that lives in your terminal
+    license: MIT
+    repository:
+      owner: smoothyy3
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    # The binaries are unsigned, so Gatekeeper quarantines them on download.
+    hooks:
+      post:
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tardigrade"]
+          end

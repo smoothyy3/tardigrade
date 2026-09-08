@@ -21,6 +21,10 @@ import (
 	"github.com/smoothyy3/tardigrade/internal/supervisor"
 )
 
+// version is stamped in at release time (-X main.version=...). A build from
+// source leaves it at "dev".
+var version = "dev"
+
 const (
 	// keyWound is what pressing `d` costs the creature, in cells.
 	keyWound = 14
@@ -47,7 +51,13 @@ func main() {
 	flag.Int64Var(&opts.seed, "seed", -1, "random seed (-1: a new one every run)")
 	flag.BoolVar(&opts.screensaver, "screensaver", false, "wound and heal on a timer, exit on any key")
 	worker := flag.Bool("worker", false, "run the creature itself (the supervisor sets this)")
+	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println("tardigrade", version)
+		return
+	}
 
 	// screensaver idles at half speed
 	if opts.screensaver && !isSet("fps") {

@@ -6,6 +6,18 @@ A self-healing creature that lives in your terminal. Drag the mouse across it an
 
 Four creatures ship in the binary. Each one is 96KB of weights and without an actual image present at all.
 
+## Install
+
+macOS, via Homebrew:
+
+```bash
+brew install --cask smoothyy3/tap/tardigrade
+```
+
+Linux and Windows: grab an archive from [releases](https://github.com/smoothyy3/tardigrade/releases), untar it, and drop `tardigrade` somewhere on your `$PATH`. There are no dependencies; it is a single static binary with the weights inside it.
+
+Or with a Go toolchain:
+
 ```bash
 go install github.com/smoothyy3/tardigrade/cmd/tardigrade@latest
 ```
