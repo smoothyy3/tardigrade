@@ -17,9 +17,17 @@ var tardigrade []byte
 //go:embed gecko.nca
 var gecko []byte
 
+//go:embed jellyfish.nca
+var jellyfish []byte
+
+//go:embed mouse.nca
+var mouse []byte
+
 var creatures = map[string][]byte{
 	"tardigrade": tardigrade,
 	"gecko":      gecko,
+	"jellyfish":  jellyfish,
+	"mouse":      mouse,
 }
 
 // Default creature
