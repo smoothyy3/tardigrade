@@ -2,7 +2,9 @@
 
 A self-healing creature that lives in your terminal. Drag the mouse across it and it regrows. `kill -9` its PID and it comes back.
 
-![tardigrade being killed and regrowing](demo/killnine.gif)
+![four creatures each growing from a single seed cell](demo/creatures.gif)
+
+Four creatures ship in the binary. Each one is 96KB of weights and without an actual image present at all.
 
 ```bash
 go install github.com/smoothyy3/tardigrade/cmd/tardigrade@latest
@@ -12,7 +14,7 @@ go install github.com/smoothyy3/tardigrade/cmd/tardigrade@latest
 
 ```bash
 tardigrade                  # drag the mouse to wound it, q to quit
-tardigrade --creature gecko # grow the gecko instead
+tardigrade --creature gecko # or jellyfish, or mouse
 tardigrade --screensaver    # wounds and heals itself on a timer, any key exits
 ```
 
@@ -34,7 +36,7 @@ kill -9 $(pgrep -f 'tardigrade --worker')
 | flag | default | |
 | --- | --- | --- |
 | `--screensaver` | off | autonomous damage/heal loop, exits on any keypress |
-| `--creature` | `tardigrade` | which built-in creature to grow (`tardigrade`, `gecko`) |
+| `--creature` | `tardigrade` | which built-in creature to grow (`tardigrade`, `gecko`, `jellyfish`, `mouse`) |
 | `--fps` | 20 | frames per second |
 | `--size` | 56 | grid size in cells; the creature was trained at 56 |
 | `--seed` | time | random seed |
@@ -72,12 +74,15 @@ The creature is the sprite, not the code. Draw an RGBA PNG on a transparent back
 ```bash
 python training/train.py --steps 60000 --name newt --target newt.png
 python training/verify.py --run training/runs/newt --target newt.png
-python training/export_weights.py --run training/runs/newt --out assets/newt.nca
+python training/export_weights.py --run training/runs/newt --out assets/newt.nca \
+  --fixture /tmp/newt_fixture.bin
 ```
+
+Pass `--fixture` for anything that is not the tardigrade. `export_weights.py` also dumps a forward-pass fixture, and its default path is `internal/nca/testdata/forward_case.bin`, the one `internal/nca/model_test.go` checks the Go forward pass against, using the *tardigrade's* weights. Overwrite it with another creature's and that test fails.
 
 Draw it chunky. Nothing thinner than about two cells survives.
 
-Creatures registered in `assets/assets.go` are baked into the binary and picked with `--creature <name>` — a `gecko` ships alongside the tardigrade. `--weights <file>` loads an `.nca` from disk instead.
+Creatures registered in `assets/assets.go` are baked into the binary and picked with `--creature <name>`. A `gecko`, a `jellyfish` and a `mouse` ship alongside the tardigrade. `--weights <file>` loads an `.nca` from disk instead.
 
 ## License
 
