@@ -45,12 +45,6 @@ checksum:
 changelog:
   use: github
   sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - "^chore:"
-      - "^ci:"
 
 release:
   draft: false
