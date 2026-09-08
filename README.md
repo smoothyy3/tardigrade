@@ -1,10 +1,10 @@
 # tardigrade
 
-A self-healing creature that lives in your terminal. Drag the mouse across it and it regrows. `kill -9` its PID and it comes back.
+It is not an image. It is a self-healing mess of weights that lives in your terminal, whose only stable state is the creature itself. Drag the mouse across it and it regrows. `kill -9` its PID and it comes back.
 
 ![four creatures each growing from a single seed cell](demo/creatures.gif)
 
-Four creatures ship in the binary. Each one is 96KB of weights and without an actual image present at all.
+Four creatures ship in the binary. Each one is 96KB of weights: a single rule, run by every cell.
 
 ## Install
 
