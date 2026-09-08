@@ -168,7 +168,8 @@ func runWorker(opts options) error {
 			}
 
 		case <-frame.C:
-			if g.Empty() {
+			// Nothing left alive or everything alive. Both shouldnt be
+			if g.Empty() || g.Saturated() {
 				g.Seed()
 			}
 			g.Step()

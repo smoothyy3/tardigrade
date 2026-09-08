@@ -11,6 +11,9 @@ const (
 
 	// AliveAlpha = CA living threshold
 	AliveAlpha = 0.1
+
+	// At this point not a creature anymore but "all alive" dead end
+	SaturatedAlive = 0.9
 )
 
 // Region of cells, in cell coordinates.
@@ -79,6 +82,18 @@ func (g *Grid) Empty() bool {
 		}
 	}
 	return true
+}
+
+// If creature has filled whole canvas (dead end)
+func (g *Grid) Saturated() bool {
+	alpha := g.state[alphaChannel*g.Width*g.Height:][:g.Width*g.Height]
+	live := 0
+	for _, a := range alpha {
+		if a > AliveAlpha {
+			live++
+		}
+	}
+	return float64(live) >= SaturatedAlive*float64(len(alpha))
 }
 
 // Returns a cell's visible colour and alpha

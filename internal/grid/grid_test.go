@@ -72,3 +72,31 @@ func TestEmptyReportsAWipedGrid(t *testing.T) {
 		t.Error("seeding should bring the grid back to life")
 	}
 }
+
+// All cells alive dead end
+func TestSaturatedReportsARunawayGrid(t *testing.T) {
+	g := New(testModel(16), 8, 6, 1)
+	if g.Saturated() {
+		t.Error("a freshly seeded grid is one live cell, not saturated")
+	}
+
+	alpha := g.state[alphaChannel*g.Width*g.Height:][:g.Width*g.Height]
+	for i := range alpha {
+		alpha[i] = 1
+	}
+	if !g.Saturated() {
+		t.Error("a grid with every cell alive should read as saturated")
+	}
+
+	for i := 0; i < len(alpha)/5; i++ {
+		alpha[i] = 0
+	}
+	if g.Saturated() {
+		t.Errorf("%d%% alive should not read as saturated", 80)
+	}
+
+	g.Seed()
+	if g.Saturated() {
+		t.Error("seeding should clear the runaway state")
+	}
+}
