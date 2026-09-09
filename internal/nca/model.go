@@ -122,7 +122,7 @@ func Load(r io.Reader) (*Model, error) {
 		*section.dst = buf
 	}
 
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < runtime.GOMAXPROCS(0); i++ {
 		m.bands = append(m.bands, &band{
 			percept: make([]float32, m.Percept),
 			hidden:  make([]float32, m.Hidden),
@@ -248,7 +248,7 @@ func (m *Model) livingMask(state []float32, out []bool, width, height int) {
 	alpha := state[m.LifeChannel*width*height:]
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			max := float32(math.Inf(-1))
+			strongest := float32(math.Inf(-1))
 			for ky := -1; ky <= 1; ky++ {
 				yy := y + ky
 				if yy < 0 || yy >= height {
@@ -259,12 +259,12 @@ func (m *Model) livingMask(state []float32, out []bool, width, height int) {
 					if xx < 0 || xx >= width {
 						continue
 					}
-					if v := alpha[yy*width+xx]; v > max {
-						max = v
+					if v := alpha[yy*width+xx]; v > strongest {
+						strongest = v
 					}
 				}
 			}
-			out[y*width+x] = max > m.LifeThreshold
+			out[y*width+x] = strongest > m.LifeThreshold
 		}
 	}
 }

@@ -13,7 +13,7 @@ const (
 	AliveAlpha = 0.1
 
 	// At this point not a creature anymore but "all alive" dead end
-	SaturatedAlive = 0.9
+	saturatedAlive = 0.9
 )
 
 // Region of cells, in cell coordinates.
@@ -44,9 +44,7 @@ func New(model *nca.Model, width, height int, seed int64) *Grid {
 
 // Seed resets
 func (g *Grid) Seed() {
-	for i := range g.state {
-		g.state[i] = 0
-	}
+	clear(g.state)
 	centre := (g.Height/2)*g.Width + g.Width/2
 	for c := 0; c < 4; c++ {
 		g.state[c*g.Width*g.Height+centre] = 1
@@ -93,7 +91,7 @@ func (g *Grid) Saturated() bool {
 			live++
 		}
 	}
-	return float64(live) >= SaturatedAlive*float64(len(alpha))
+	return float64(live) >= saturatedAlive*float64(len(alpha))
 }
 
 // Returns a cell's visible colour and alpha
